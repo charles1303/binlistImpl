@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+#TODO: figure out why I need this here and in bootstrap.yml
+spring:
+  profiles.active: development
+
+---
+spring:
+  profiles: development
+  application:
+    name: binList
+  datasource:
+    url: jdbc:mysql://localhost:3306/binList
+    username: 
+    password: 
+    driverClassName: com.mysql.jdbc.Driver
+    test-on-borrow: true
+    test-while-idle: true
+    validation-query: select 1;
+    maxActive: 5
+    maxIdle: 5
+    minIdle: 2
+    initialSize: 0
+    maxWait: 30000
+    testOnReturn: false
+    testWhileIdle: false
+    timeBetweenEvictionRunsMillis: 5000
+    minEvictableIdleTimeMillis: 60000
+    removeAbandoned: false
+    removeAbandonedTimeout: 60
+    logAbandoned: false
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        ddl-auto: update
+binlist:
+  url: https://lookup.binlist.net
+security:
+  basic:
+    enable: false
+  ignored: /**
+  
