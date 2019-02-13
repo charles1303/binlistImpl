@@ -3,11 +3,21 @@ package com.projects.binlist.services;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 
 import com.projects.binlist.dto.responses.BinListResponse;
 import com.projects.binlist.dto.responses.CardDetailDto;
@@ -21,8 +31,16 @@ import com.projects.binlist.repositories.CardDetailRequestLogRepository;
 @Service
 public class CardDetailService {
 	
+	Logger logger = LoggerFactory.getLogger(CardDetailService.class);
+	
+	@Value("${binlist.url}")
+	 String binlistURL;
+	
 	@Autowired
 	private CardDetailRepository cardDetailRepository;
+	
+	@Autowired
+	RestTemplate restTemplate;
 	
 	@Autowired
 	private CardDetailRequestLogRepository cardDetailRequestLogRepository;
@@ -33,16 +51,19 @@ public class CardDetailService {
     }
 	
 	@Async
+	@CacheEvict(value = "hits:per:card:number", key="'getCardRequestLogsCountGroupedByCardNumber'")
 	public void logCardDetailRequest(String iinStart) {
 		CardDetailRequestLog requestLog = new CardDetailRequestLog();
 		requestLog.setCardNumber(iinStart);
 		cardDetailRequestLogRepository.save(requestLog);
 	}
 	
-	public CardRequestLogDto getCardRequestLogsCountGroupedByCardNumber(Pageable pageable) {
-		CardRequestLogDto cardRequestLogDto = new CardRequestLogDto();
+	@Cacheable(value = "hits:per:card:number", key = "#root.methodName")
+	public CardRequestLogDto getCardRequestLogsCountGroupedByCard(Pageable pageable) {
+		CardRequestLogDto cardRequestLogDto = null;
 		Page<Map<String, Object>> page =  cardDetailRequestLogRepository.getCardRequestLogsCountGroupedByCardNumber(pageable);
 		if(page != null) {
+			cardRequestLogDto = new CardRequestLogDto();
 			cardRequestLogDto.setStart(page.getNumber());
 			cardRequestLogDto.setLimit(page.getSize());
 			cardRequestLogDto.setSize(page.getTotalElements());
@@ -81,6 +102,22 @@ public class CardDetailService {
 			cardDetailDto.setSuccess(true);
 		}
 		return cardDetailDto;
+	}
+	
+	public CardDetailDto verifyCardDetail(String iinStart, HttpEntity<?> entity) {
+		logCardDetailRequest(iinStart);
+		
+        ResponseEntity<BinListResponse> response = null;
+        BinListResponse binListResponse = null;
+        try {
+        	response = restTemplate.exchange(binlistURL +"/{iinStart}",HttpMethod.GET, entity,BinListResponse.class, iinStart);
+        	binListResponse = response.getBody();
+        }catch (HttpStatusCodeException e) {
+        	logger.error("Error processing request ", e);
+		}
+        
+		
+		return convertToDto(binListResponse);
 	}
 	
 }

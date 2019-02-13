@@ -1,20 +1,29 @@
 package com.projects.binlist.controllers;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import com.projects.binlist.dto.responses.CardRequestLogDto;
 import com.projects.binlist.services.CardDetailService;
 
 @RunWith(SpringRunner.class)
@@ -22,51 +31,47 @@ import com.projects.binlist.services.CardDetailService;
 @AutoConfigureMockMvc
 public class CardDetailControllerTest {
 	
-	
 	@Autowired
     private MockMvc mockMvc;
- 
-	@Test
-    public void givenCardNumber_whenVerifyCardDetails_thenReturnValidJsonObject() throws Exception{
-    	String iinStart = "45717260";
-    	
-    	CardDetailService serviceSpy = spy(new CardDetailService());
-    	doNothing().when(serviceSpy).logCardDetailRequest(iinStart);
-    	this.mockMvc.perform(get("/card-scheme/verify/" + iinStart))
-                .andExpect(status().isOk())
-    			.andExpect(jsonPath("$.success").exists())
-    			.andExpect(jsonPath("$.payload").exists())
-    			.andExpect(jsonPath("$.payload.scheme").exists())
-    			.andExpect(jsonPath("$.payload.type").exists())
-    			.andExpect(jsonPath("$.payload.bank").exists());
-    }
 	
-	@Test
-    public void givenInvalidCardNumber_whenVerifyCardDetails_thenReturnExpectedJsonObject() throws Exception{
-    	String iinStart = "xxxxxx45717260";
-    	
-    	CardDetailService serviceSpy = spy(new CardDetailService());
-    	doNothing().when(serviceSpy).logCardDetailRequest(iinStart);
-    	this.mockMvc.perform(get("/card-scheme/verify/" + iinStart))
-                .andExpect(status().isOk())
-    			.andExpect(jsonPath("$.success").exists())
-    			.andExpect(jsonPath("$.payload").doesNotExist());
-    }
+	@MockBean
+	private CardDetailService service;
 	
 	@Test
     public void givenStartAndLimit_whenGetCardHits_thenReturnValidJsonObject() throws Exception{
     	int start = 0;
     	int limit = 3;
+    	String expected = "{\n" + 
+    			"    \"success\": true,\n" + 
+    			"    \"start\": 0,\n" + 
+    			"    \"limit\": 3,\n" + 
+    			"    \"size\": 1,\n" + 
+    			"    \"payload\": {\n" + 
+    			"        \"45717260\": \"10\"\n" + 
+    			"    }\n" + 
+    			"}";
+    	CardRequestLogDto dto = new CardRequestLogDto();
+    	dto.setSuccess(true);
+    	dto.setStart(0);
+    	dto.setLimit(3);
+    	dto.setSize(1);
+    	Map<String, String> payload = new HashMap<>();
+    	payload.put("45717260", "10");
+    	dto.setPayload(payload);
+    	Mockito.when(service.getCardRequestLogsCountGroupedByCard(any())).thenReturn(dto);
+    	RequestBuilder requestBuilder = MockMvcRequestBuilders.get(
+    			"/card-scheme/stats?start="+start+"&limit="+limit).accept(
+				MediaType.APPLICATION_JSON);
     	
-    	this.mockMvc.perform(get("/card-scheme/stats?start="+start+"&limit="+limit))
-                .andExpect(status().isOk())
-    			.andExpect(jsonPath("$.success").exists())
-    			.andExpect(jsonPath("$.start").exists())
-    			.andExpect(jsonPath("$.limit").exists())
-    			.andExpect(jsonPath("$.size").exists())
-    			.andExpect(jsonPath("$.payload").exists())
-    			.andExpect(MockMvcResultMatchers.jsonPath("$.start").value(start))
-    			.andExpect(MockMvcResultMatchers.jsonPath("$.limit").value(limit));
+    	MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+    	MockHttpServletResponse response = result.getResponse();
+    	assertEquals(HttpStatus.OK.value(), response.getStatus());
+    	
+    	JSONAssert.assertEquals(expected, result.getResponse()
+				.getContentAsString(), false);
+				
+    	
+    	
     }
 
 }

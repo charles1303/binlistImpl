@@ -1,19 +1,19 @@
 server:
   port: 8080
 
-#TODO: figure out why I need this here and in bootstrap.yml
 spring:
   profiles.active: development
 
 ---
+#export $(cat .env | xargs)
 spring:
   profiles: development
   application:
     name: binList
   datasource:
-    url: jdbc:mysql://localhost:3306/binList
-    username: 
-    password: 
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driverClassName: com.mysql.jdbc.Driver
     test-on-borrow: true
     test-while-idle: true
@@ -37,6 +37,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
         ddl-auto: update
+        
 binlist:
   url: https://lookup.binlist.net
 security:
