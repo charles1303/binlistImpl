@@ -5,53 +5,92 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.ServletTestExecutionListener;
+import org.springframework.web.client.RestTemplate;
 
 import com.projects.binlist.dto.responses.CardRequestLogDto;
+import com.projects.binlist.repositories.CardDetailRepository;
 import com.projects.binlist.repositories.CardDetailRequestLogRepository;
 import com.projects.binlist.services.CardDetailService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
+@TestExecutionListeners(listeners = {SpringBootDependencyInjectionTestExecutionListener.class, ServletTestExecutionListener.class})
 public class CacheIntegrationTest {
 	
-	@Mock
-    private CardDetailRequestLogRepository cardDetailRequestLogRepository;
+	@Autowired
+	CardDetailRequestLogRepository testCardDetailRequestLogRepository;
 	
-	@InjectMocks
-	private CardDetailService service;
+	@Autowired
+	CardDetailService testService;
+	
+	@Autowired
+	private CardDetailRepository testCardDetailRepository;
+	
+	@Autowired
+	RestTemplate restTemplate;
+	
+	
+	@Configuration
+    @EnableCaching
+    static class SpringConfig{
+        @Bean
+        public CardDetailService testService(){
+        	CardDetailService mockService = new CardDetailService();
+        	mockService.setCardDetailRequestLogRepository(testCardDetailRequestLogRepository());
+            return mockService;
+        }
+        @Bean
+        public CardDetailRequestLogRepository testCardDetailRequestLogRepository(){
+            return Mockito.mock(CardDetailRequestLogRepository.class);
+        }
+        
+        @Bean
+        public CardDetailRepository testCardDetailRepository(){
+            return Mockito.mock(CardDetailRepository.class);
+        }
+        
+        @Bean
+        public RestTemplate restTemplate(){
+            return new RestTemplate();
+        }
+        
+        @Bean
+        CacheManager testCacheManager() {
+            return new ConcurrentMapCacheManager("hits:per:card:number");
+        }
+    }
+	
 	
 	private static final PageRequest request = new PageRequest(0, 1);
 	
 	  @Test
-	  public void methodInvocationShouldBeCached() {
+	  public void firstCallResultShouldBeCached_AndReturned_InSecondCallResult() {
 		  // First invocation returns object returned by the method
-		  CardRequestLogDto result = service.getCardRequestLogsCountGroupedByCard(request);
-	    
+		  CardRequestLogDto firstCallResult = testService.getCardRequestLogsCountGroupedByCard(request);
+		  
 		 // Second invocation should return cached value, *not* second (as set up above)
-	    CardRequestLogDto result2 = service.getCardRequestLogsCountGroupedByCard(request);
+	    CardRequestLogDto secondCallResult = testService.getCardRequestLogsCountGroupedByCard(request);
 	    
+	    assertThat(secondCallResult, equalTo(firstCallResult));
 	    
-	    assertThat(result2, equalTo(result));
+	 // Verify Repository method was called just once between the two service calls
+	    verify(testCardDetailRequestLogRepository, times(1)).getCardRequestLogsCountGroupedByCardNumber(request);
+	    
 	  }
 	  
 }

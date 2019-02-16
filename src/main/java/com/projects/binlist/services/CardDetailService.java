@@ -45,25 +45,32 @@ public class CardDetailService {
 	@Autowired
 	private CardDetailRequestLogRepository cardDetailRequestLogRepository;
 	
+	public CardDetailRequestLogRepository getCardDetailRequestLogRepository() {
+		return cardDetailRequestLogRepository;
+	}
+
+	public void setCardDetailRequestLogRepository(CardDetailRequestLogRepository cardDetailRequestLogRepository) {
+		this.cardDetailRequestLogRepository = cardDetailRequestLogRepository;
+	}
+
 	public CardDetailDto verifyCardDetail(String iinStart) {
 		
 		return convertToDto(cardDetailRepository.findByIinStart(iinStart));
     }
 	
 	@Async
-	@CacheEvict(value = "hits:per:card:number", key="'getCardRequestLogsCountGroupedByCardNumber'")
+	@CacheEvict(value = "hits:per:card:number", key="'getCardRequestLogsCountGroupedByCard'")
 	public void logCardDetailRequest(String iinStart) {
 		CardDetailRequestLog requestLog = new CardDetailRequestLog();
 		requestLog.setCardNumber(iinStart);
 		cardDetailRequestLogRepository.save(requestLog);
 	}
 	
-	@Cacheable(value = "hits:per:card:number", key = "#root.methodName")
+	@Cacheable(value = "hits:per:card:number", key = "#root.method.name")
 	public CardRequestLogDto getCardRequestLogsCountGroupedByCard(Pageable pageable) {
-		CardRequestLogDto cardRequestLogDto = null;
+		CardRequestLogDto cardRequestLogDto = new CardRequestLogDto();
 		Page<Map<String, Object>> page =  cardDetailRequestLogRepository.getCardRequestLogsCountGroupedByCardNumber(pageable);
 		if(page != null) {
-			cardRequestLogDto = new CardRequestLogDto();
 			cardRequestLogDto.setStart(page.getNumber());
 			cardRequestLogDto.setLimit(page.getSize());
 			cardRequestLogDto.setSize(page.getTotalElements());

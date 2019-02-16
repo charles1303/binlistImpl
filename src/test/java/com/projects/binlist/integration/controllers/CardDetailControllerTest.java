@@ -1,7 +1,8 @@
-package com.projects.binlist.controllers;
+package com.projects.binlist.integration.controllers;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +35,6 @@ public class CardDetailControllerTest {
 	@Autowired
     private MockMvc mockMvc;
 	
-	@MockBean
-	private CardDetailService service;
-	
 	@Test
     public void givenStartAndLimit_whenGetCardHits_thenReturnValidJsonObject() throws Exception{
     	int start = 0;
@@ -47,7 +45,7 @@ public class CardDetailControllerTest {
     			"    \"limit\": 3,\n" + 
     			"    \"size\": 1,\n" + 
     			"    \"payload\": {\n" + 
-    			"        \"45717260\": \"10\"\n" + 
+    			"        \"45717260\": \"20\"\n" + 
     			"    }\n" + 
     			"}";
     	CardRequestLogDto dto = new CardRequestLogDto();
@@ -56,9 +54,10 @@ public class CardDetailControllerTest {
     	dto.setLimit(3);
     	dto.setSize(1);
     	Map<String, String> payload = new HashMap<>();
-    	payload.put("45717260", "10");
+    	payload.put("45717260", "20");
     	dto.setPayload(payload);
-    	Mockito.when(service.getCardRequestLogsCountGroupedByCard(any())).thenReturn(dto);
+    	CardDetailService testService = mock(CardDetailService.class);
+    	Mockito.when(testService.getCardRequestLogsCountGroupedByCard(any())).thenReturn(dto);
     	RequestBuilder requestBuilder = MockMvcRequestBuilders.get(
     			"/card-scheme/stats?start="+start+"&limit="+limit).accept(
 				MediaType.APPLICATION_JSON);

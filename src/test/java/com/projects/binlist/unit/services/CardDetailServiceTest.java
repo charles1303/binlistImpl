@@ -1,11 +1,14 @@
 package com.projects.binlist.unit.services;
 
+import static org.mockito.Mockito.doNothing;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -35,6 +38,7 @@ public class CardDetailServiceTest {
 	@Mock
     private CardDetailRequestLogRepository cardDetailRequestLogRepository;
 	
+	@Spy
 	@InjectMocks
     private CardDetailService service;
 	
@@ -61,6 +65,7 @@ public class CardDetailServiceTest {
 		Mockito
         .when(restTemplate.exchange(binlistURL + "/{iinStart}",HttpMethod.GET, entity,BinListResponse.class, iinStart))
         .thenReturn(new ResponseEntity(binListResponse, HttpStatus.OK));
+		doNothing().when(service).logCardDetailRequest(iinStart);
 		CardDetailDto dtoResponse = service.verifyCardDetail(iinStart, entity);
 		Assert.assertEquals(expectedDto.isSuccess(), dtoResponse.isSuccess());
 		Assert.assertEquals(expectedDto.getPayload().getBank(), dtoResponse.getPayload().getBank());
