@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -55,18 +57,18 @@ public class CardDetailService {
 
 	public CardDetailDto verifyCardDetail(String iinStart) {
 		
-		return convertToDto(cardDetailRepository.findByIinStart(iinStart));
+		return convertToCardDetailDto(cardDetailRepository.findByIinStart(iinStart));
     }
 	
 	@Async
-	@CacheEvict(value = "hits:per:card:number", key="'getCardRequestLogsCountGroupedByCard'")
+	@CacheEvict(value = "cache", allEntries = true)
 	public void logCardDetailRequest(String iinStart) {
 		CardDetailRequestLog requestLog = new CardDetailRequestLog();
 		requestLog.setCardNumber(iinStart);
 		cardDetailRequestLogRepository.save(requestLog);
 	}
 	
-	@Cacheable(value = "hits:per:card:number", key = "#root.method.name")
+	@Cacheable(value = "cache", key = "#root.method.name+ '_' +#pageable.pageNumber")
 	public CardRequestLogDto getCardRequestLogsCountGroupedByCard(Pageable pageable) {
 		CardRequestLogDto cardRequestLogDto = new CardRequestLogDto();
 		Page<Map<String, Object>> page =  cardDetailRequestLogRepository.getCardRequestLogsCountGroupedByCardNumber(pageable);
@@ -87,7 +89,7 @@ public class CardDetailService {
 		return cardRequestLogDto;
 	}
 	
-	private CardDetailDto convertToDto(CardDetail cardDetail) {
+	private CardDetailDto convertToCardDetailDto(CardDetail cardDetail) {
 		CardDetailDto cardDetailDto = new CardDetailDto();
 		if(cardDetail != null) {
 			cardDetailDto.setPayload(new CardDetailPayloadDto());
@@ -99,7 +101,7 @@ public class CardDetailService {
 		return cardDetailDto;
 	}
 	
-	public CardDetailDto convertToDto(BinListResponse binListResponse) {
+	public CardDetailDto convertToCardDetailDto(BinListResponse binListResponse) {
 		CardDetailDto cardDetailDto = new CardDetailDto();
 		if(!(binListResponse == null)) {
 			cardDetailDto.setPayload(new CardDetailPayloadDto());
@@ -124,7 +126,7 @@ public class CardDetailService {
 		}
         
 		
-		return convertToDto(binListResponse);
+		return convertToCardDetailDto(binListResponse);
 	}
 	
 }

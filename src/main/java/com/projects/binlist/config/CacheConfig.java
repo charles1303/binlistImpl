@@ -14,7 +14,7 @@ public class CacheConfig {
 	@Bean
 	@Primary
 	public CacheManager cacheManager() {
-		return new ConcurrentMapCacheManager("hits:per:card:number");
+		return new ConcurrentMapCacheManager("cache");
 	}
 
 }

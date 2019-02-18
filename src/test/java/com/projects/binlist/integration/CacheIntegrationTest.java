@@ -71,7 +71,7 @@ public class CacheIntegrationTest {
         
         @Bean
         CacheManager testCacheManager() {
-            return new ConcurrentMapCacheManager("hits:per:card:number");
+            return new ConcurrentMapCacheManager("cache");
         }
     }
 	
@@ -88,7 +88,7 @@ public class CacheIntegrationTest {
 	    
 	    assertThat(secondCallResult, equalTo(firstCallResult));
 	    
-	 // Verify Repository method was called just once between the two service calls
+	 // Verify Repository method was called just after the two service calls
 	    verify(testCardDetailRequestLogRepository, times(1)).getCardRequestLogsCountGroupedByCardNumber(request);
 	    
 	  }

@@ -28,6 +28,7 @@ public class CardDetailController {
 	
 	@RequestMapping(value = "/card-scheme/stats", params = { "start", "limit" }, method = {RequestMethod.GET})
 	public CardRequestLogDto getCardDetail(@RequestParam("start") int start, @RequestParam("limit") int limit){
+		
 		return cardDetailService.getCardRequestLogsCountGroupedByCard(new PageRequest(start, limit));
 		
 	}
