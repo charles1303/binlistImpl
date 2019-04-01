@@ -37,6 +37,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
         ddl-auto: update
+  mvc:
+    throw-exception-if-no-handler-found: true
         
 binlist:
   url: https://lookup.binlist.net
@@ -44,4 +46,14 @@ security:
   basic:
     enable: false
   ignored: /**
+logging:
+  file: binlist
+  path: /var/log  
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework.web: ERROR
+    com.projects.binlist: ERROR
+    org.hibernate: ERROR
   

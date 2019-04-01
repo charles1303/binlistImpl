@@ -48,7 +48,8 @@ public class JpaConfig {
             @Qualifier("dataSource") DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
-                .packages("com.projects.binlist.models")
+                .packages("com.projects.binlist.models", "org.axonframework.eventsourcing.eventstore.jpa",
+                        "org.axonframework.eventhandling.tokenstore","org.axonframework.modelling.saga.repository.jpa")
                 .persistenceUnit("binlist")
                 .build();
     }

@@ -5,7 +5,9 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.web.client.RestTemplate;
 
+import com.projects.binlist.components.CardDetailCommandComponent;
 import com.projects.binlist.dto.responses.CardRequestLogDto;
+import com.projects.binlist.exceptions.GeneralException;
+import com.projects.binlist.exceptions.RecordNotFoundException;
 import com.projects.binlist.repositories.CardDetailRepository;
 import com.projects.binlist.repositories.CardDetailRequestLogRepository;
 import com.projects.binlist.services.CardDetailService;
@@ -32,6 +37,9 @@ import com.projects.binlist.services.CardDetailService;
 @TestExecutionListeners(listeners = {SpringBootDependencyInjectionTestExecutionListener.class, ServletTestExecutionListener.class})
 public class CacheIntegrationTest {
 	
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
+	
 	@Autowired
 	CardDetailRequestLogRepository testCardDetailRequestLogRepository;
 	
@@ -40,6 +48,9 @@ public class CacheIntegrationTest {
 	
 	@Autowired
 	private CardDetailRepository testCardDetailRepository;
+	
+	@Autowired
+	private CardDetailCommandComponent testCardDetailCommandComponent;
 	
 	@Autowired
 	RestTemplate restTemplate;
@@ -57,6 +68,11 @@ public class CacheIntegrationTest {
         @Bean
         public CardDetailRequestLogRepository testCardDetailRequestLogRepository(){
             return Mockito.mock(CardDetailRequestLogRepository.class);
+        }
+        
+        @Bean
+        public CardDetailCommandComponent testCardDetailCommandComponent(){
+            return Mockito.mock(CardDetailCommandComponent.class);
         }
         
         @Bean
@@ -78,8 +94,8 @@ public class CacheIntegrationTest {
 	
 	private static final PageRequest request = new PageRequest(0, 1);
 	
-	  @Test
-	  public void firstCallResultShouldBeCached_AndReturned_InSecondCallResult() {
+	  @Test(expected = GeneralException.class)
+	  public void firstCallResultShouldBeCached_AndReturned_InSecondCallResult() throws GeneralException, RecordNotFoundException {
 		  // First invocation returns object returned by the method
 		  CardRequestLogDto firstCallResult = testService.getCardRequestLogsCountGroupedByCard(request);
 		  
@@ -90,6 +106,9 @@ public class CacheIntegrationTest {
 	    
 	 // Verify Repository method was called just after the two service calls
 	    verify(testCardDetailRequestLogRepository, times(1)).getCardRequestLogsCountGroupedByCardNumber(request);
+	    
+	    exceptionRule.expect(GeneralException.class);
+		exceptionRule.expectMessage("General exception. Please contact Admin!");
 	    
 	  }
 	  

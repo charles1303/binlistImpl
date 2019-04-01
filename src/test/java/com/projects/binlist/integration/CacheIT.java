@@ -11,6 +11,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.projects.binlist.exceptions.GeneralException;
+import com.projects.binlist.exceptions.RecordNotFoundException;
 import com.projects.binlist.services.CardDetailService;
 
 @RunWith(SpringRunner.class)
@@ -24,7 +26,7 @@ public class CacheIT {
 	private CardDetailService service;
 	
 	@Test
-	public void validateCache() {
+	public void validateCache() throws GeneralException, RecordNotFoundException {
 		Cache hits = this.cacheManager.getCache("hits:per:card:number");
 		assertThat(hits).isNotNull();
 		hits.clear(); // Simple test assuming the cache is empty.

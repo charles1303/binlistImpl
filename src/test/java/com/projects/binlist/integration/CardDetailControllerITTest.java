@@ -19,9 +19,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.projects.binlist.services.CardDetailService;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+//@RunWith(SpringRunner.class)
+//@SpringBootTest
+//@AutoConfigureMockMvc
 public class CardDetailControllerITTest {
 	
 	
@@ -57,7 +57,7 @@ public class CardDetailControllerITTest {
     
     
 	
-	@Test
+	//@Test
     public void givenStartAndLimit_whenGetCardHits_thenReturnValidJsonObject() throws Exception{
     	int start = 0;
     	int limit = 3;

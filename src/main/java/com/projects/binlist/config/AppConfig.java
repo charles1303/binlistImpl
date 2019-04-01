@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 @EnableWebMvc
 @EnableAsync
-@ComponentScan(basePackages = "com.projects.binlist")
+@ComponentScan(basePackages = {"com.projects.binlist"})
 public class AppConfig extends WebMvcConfigurerAdapter{
  
 	@Bean

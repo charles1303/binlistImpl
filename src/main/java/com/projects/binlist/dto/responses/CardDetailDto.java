@@ -2,7 +2,7 @@ package com.projects.binlist.dto.responses;
 
 import java.io.Serializable;
 
-public class CardDetailDto implements Serializable {
+public class CardDetailDto extends Response implements Serializable {
 
 	/**
 	 * 

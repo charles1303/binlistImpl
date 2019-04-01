@@ -25,6 +25,10 @@ public class CardDetailRequestLog extends BaseModel {
 	private Date requestDate = new Date();
 
 	
+	public void setRequestDate(Date requestDate) {
+		this.requestDate = requestDate;
+	}
+
 	public String getCardNumber() {
 		return cardNumber;
 	}

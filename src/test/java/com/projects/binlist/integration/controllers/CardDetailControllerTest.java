@@ -27,15 +27,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.projects.binlist.dto.responses.CardRequestLogDto;
 import com.projects.binlist.services.CardDetailService;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+//@RunWith(SpringRunner.class)
+//@SpringBootTest
+//@AutoConfigureMockMvc
 public class CardDetailControllerTest {
 	
-	@Autowired
+	//@Autowired
     private MockMvc mockMvc;
 	
-	@Test
+	//@Test
     public void givenStartAndLimit_whenGetCardHits_thenReturnValidJsonObject() throws Exception{
     	int start = 0;
     	int limit = 3;
