@@ -7,6 +7,14 @@ public class Response implements Serializable {
 	private int code;
 	
 	private String description;
+	
+	public Response() {
+	}
+	
+	public Response(int code, String description) {
+		this.code = code;
+		this.description = description;
+	}
 
 	public int getCode() {
 		return code;

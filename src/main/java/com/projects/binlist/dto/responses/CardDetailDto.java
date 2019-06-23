@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 public class CardDetailDto extends Response implements Serializable {
 
+	public CardDetailDto() {}
+	
+	public CardDetailDto(int code, String description) {
+		super(code, description);
+	}
+
 	/**
 	 * 
 	 */

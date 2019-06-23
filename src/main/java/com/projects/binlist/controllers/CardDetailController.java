@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,6 +22,7 @@ import com.projects.binlist.exceptions.RecordNotFoundException;
 import com.projects.binlist.services.CardDetailService;
 
 @RestController
+@RequestMapping("/")
 public class CardDetailController {
 	
 	Logger logger = LoggerFactory.getLogger(CardDetailController.class);
@@ -29,7 +31,7 @@ public class CardDetailController {
 	@Autowired
 	private CardDetailService cardDetailService;
 	
-	
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@RequestMapping(value = "/card-scheme/stats", params = { "start", "limit" }, method = {RequestMethod.GET})
 	public CardRequestLogDto getCardDetail(@RequestParam("start") int start, @RequestParam("limit") int limit) throws GeneralException, RecordNotFoundException {
 		

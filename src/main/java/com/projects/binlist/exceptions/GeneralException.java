@@ -10,5 +10,9 @@ public class GeneralException extends Exception {
 	public GeneralException(){
 		super("General exception. Please contact Admin!");
 	}
+	
+	public GeneralException(String message){
+		super(message);
+	}
 
 }
